@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from app.backend.db_depends import get_db
 from typing import Annotated
+
 from app.models.user import User
-from app.schemas import CreateUser, UpdateUser
+from app.schemas import CreateUser, UpdateUser, UserOut
 from sqlalchemy import insert, select, update, delete
 from slugify import slugify
 
 router = APIRouter(prefix='/user', tags=['user'])
 
 
-@router.get('/', response_model=list[User])
+@router.get('/', response_model=list[UserOut])
 async def all_users(db: Annotated[Session, Depends(get_db)]):
     query = select(User)
     result = db.execute(query)
@@ -18,8 +19,8 @@ async def all_users(db: Annotated[Session, Depends(get_db)]):
     return users
 
 
-@router.get('/user_id')
-async def user_by_id(user_id: int, db: Annotated[Session, Depends(get_db)]) -> User:
+@router.get('/user_id', response_model=UserOut)
+async def user_by_id(user_id: int, db: Annotated[Session, Depends(get_db)]):
     query = select(User).where(User.id == user_id)
     user = db.execute(query).scalar()
     if user is None:
